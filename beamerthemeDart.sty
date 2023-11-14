@@ -1,0 +1,217 @@
+% the various libraries we will be using
+\def\baselinestretch{1.0}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage[none]{hyphenat}
+\usepackage{caladea,carlito}
+\newif\ifbeamer@pixelitem
+\beamer@pixelitemtrue
+\DeclareOptionBeamer{nopixelitem}{\beamer@pixelitemfalse}
+\ProcessOptionsBeamer
+
+% define colours
+% taken from KAU's style guide
+\definecolor{KauYellow}{RGB}{247,209,23}
+\definecolor{KauBlack}{RGB}{33,33,33}
+\definecolor{KauBlue}{RGB}{0,125,140}
+\definecolor{KauWhite}{cmyk}{0,0,0,0}
+\definecolor{KauLightGray}{RGB}{181, 176, 173}
+\definecolor{KauGray}{RGB}{140, 138, 122}
+
+% set colours
+\setbeamercolor{itemize item}{fg=KauYellow}
+\setbeamercolor{enumerate item}{fg=KauYellow}
+\setbeamercolor{alerted text}{fg=KauYellow}
+\setbeamercolor{section in toc}{fg=KauBlack}
+\setbeamercolor{description item}{fg=KauYellow}
+\setbeamercolor{normal text}{fg=KauWhite}
+
+% set fonts
+%\usepackage[scaled]{helvet}
+\setbeamerfont{itemize/enumerate body}{size=\large}
+\setbeamerfont{itemize/enumerate subbody}{size=\normalsize}
+\setbeamerfont{itemize/enumerate subsubbody}{size=\small}
+
+\ifbeamer@pixelitem
+% make the itemize bullets pixelated >
+\setbeamertemplate{itemize item}{
+	\tikz{
+		\draw[fill=KauYellow,draw=none] (0, 0) rectangle(0.1, 0.1);
+		\draw[fill=KauYellow,draw=none] (0.1, 0.1) rectangle(0.2, 0.2);
+		\draw[fill=KauYellow,draw=none] (0, 0.2) rectangle(0.1, 0.3);
+	}
+}
+% make the subitems also pixelated >, but a little smaller and red
+\setbeamertemplate{itemize subitem}{
+	\tikz{
+		\draw[fill=KauYellow,draw=none] (0, 0) rectangle(0.075, 0.075);
+		\draw[fill=KauYellow,draw=none] (0.075, 0.075) rectangle(0.15, 0.15);
+		\draw[fill=KauYellow,draw=none] (0, 0.15) rectangle(0.075, 0.225);
+	}
+}
+\fi
+
+% disable navigation
+\setbeamertemplate{navigation symbols}{}
+
+\setbeamertemplate{title page}{}
+\setbeamertemplate{frametitle}{\vskip1cm}
+
+% disable "Figure:" in the captions
+\setbeamertemplate{caption}{\tiny\insertcaption}
+\setbeamertemplate{caption label separator}{}
+
+% since I don't know a better way to do this, these are all switches
+% doing `\setcounter{showProgressBar}{0}` will turn the progress bar off (I turn it off for Appendix slides)
+% etc
+\newcounter{showProgressBar}
+\setcounter{showProgressBar}{1}
+\newcounter{showSlideNumbers}
+\setcounter{showSlideNumbers}{1}
+\newcounter{showSlideTotal}
+\setcounter{showSlideTotal}{1}
+
+% use \makeatletter for our progress bar definitions
+% progress bar idea from http://tex.stackexchange.com/a/59749/44221
+% slightly adapted for visual purposes here
+\makeatletter
+\newcount\progressbar@tmpcounta% auxiliary counter
+\newcount\progressbar@tmpcountb% auxiliary counter
+\newdimen\progressbar@pbwidth %progressbar width
+\newdimen\progressbar@tmpdim % auxiliary dimension
+
+\newdimen\slidewidth % auxiliary dimension
+\newdimen\slideheight % auxiliary dimension
+
+% make the progress bar go across the screen
+%\progressbar@pbwidth=12.8cm
+\progressbar@pbwidth=\the\paperwidth
+\slidewidth=\the\paperwidth
+\slideheight=\the\paperheight
+
+\newcommand{\@finaltext}{}
+\newcommand{\setmotto}{\renewcommand{\@finaltext}}
+\newcommand{\backmatter}{
+\begin{frame}[plain,c]
+\begin{tikzpicture}
+	% set up the entire slide as the canvas
+	\useasboundingbox (0,0) rectangle(\slidewidth,\slideheight);
+	% hide our dash line over the frame title+subtitle
+	\fill[color=KauBlack] (-1cm, 2cm) rectangle (\slidewidth, \slideheight+0.1cm);
+	% background and text
+	\node[text width=\the\paperwidth-1cm,align=center] at (0.4\slidewidth, 0.8\slideheight) {\includegraphics[height=10ex]{attribution.pdf}};
+	%\fill[color=KauYellow] (-1cm, 0.5\slideheight-1cm) rectangle(\slidewidth, 0.5\slideheight+1cm);
+	\node[text width=\the\paperwidth-1cm,align=center] at (0.4\slidewidth, 0.5\slideheight) {\color{KauWhite}\Huge Thanks! Questions?};
+	% hide section text
+	\fill[color=KauBlack] (-1cm, 2cm) rectangle (\slidewidth, 0.2cm);
+\end{tikzpicture}
+\end{frame}
+}
+
+% use tikz to draw everything
+% it may not be the best, but it's easy to work with
+% and looks good
+% TODO: base title slide and contents slide on something other than slide numbers :/
+\setbeamertemplate{background}{
+	% deal with progress bar stuff
+	% (calculate where it should go)
+	\progressbar@tmpcounta=\insertframenumber
+	\progressbar@tmpcountb=\inserttotalframenumber
+	\progressbar@tmpdim=\progressbar@pbwidth
+	\multiply\progressbar@tmpdim by \progressbar@tmpcounta
+	\divide\progressbar@tmpdim by \progressbar@tmpcountb
+
+	\begin{tikzpicture}
+		% set up the entire slide as the canvas
+		\useasboundingbox (0,0) rectangle(\the\paperwidth,\the\paperheight);
+
+		% the background
+		\fill[color=KauBlack] (0,0) rectangle(\the\paperwidth,\the\paperheight);
+
+		% separate the drawing based on if we're the first (title) slide or not
+		\ifnum\thepage=1\relax
+			% the title page
+			% draw the fills
+			\fill[color=KauYellow] (0, 3cm) rectangle(\slidewidth,3.8cm);
+
+			% draw the actual text
+			\node[anchor=south,text width=\slidewidth-1cm,inner xsep=0.5cm] at (0.5\slidewidth,3.85cm) {\color{KauWhite}\Large\textbf{\inserttitle}};
+			\node[anchor=north east,text width=\slidewidth-1cm,align=left] at (\slidewidth+0.4cm,3.65cm) {\color{KauBlack}\small\insertsubtitle};
+			%\node[above] at(0.5\slidewidth,2.3cm) {\color{KauBlack}\tiny by};
+			\node at (0.5\slidewidth,1.5cm) {\color{KauWhite}\insertauthor};
+
+			% attribute north
+			%\node at (0.1\slidewidth,7.8cm) {\includegraphics[height=1.6cm]{kau-center}};
+			%\node at (0.9\slidewidth,7.8cm) {\includegraphics[height=1.6cm]{kau-center}};
+			\node[anchor=north,text width=\slidewidth-0.75cm,inner xsep=0.25cm,inner ysep=0.25cm] at (0.5\slidewidth,\slideheight) {\includegraphics[height=2.0cm]{attribution}\hspace{0.25cm}};
+
+			% add the date in the corner
+			\node[anchor=south east] at(\slidewidth,0cm) {\color{KauLightGray}\tiny\insertdate};
+		\else
+			% NOT the title page
+			% title bar
+			\fill[color=KauYellow] (0.25cm, \slideheight-1.1cm) rectangle(2cm,\slideheight-1.05cm);
+
+			% frame title and subtitle
+			\node[anchor=north,text width=\slidewidth-0.5cm,inner ysep=0.25cm] at (0.5\slidewidth,\slideheight) {\color{KauWhite}\Large\textbf{\insertframetitle}};
+			\node[anchor=north,text width=\slidewidth-0.7cm,inner ysep=0.72cm] at (0.5\slidewidth,\slideheight) {\color{KauLightGray}\usebeamerfont{framesubtitle}\scriptsize\insertframesubtitle~\vphantom{phantomText}};
+
+			% if we're showing a progress bar, show it
+			% (I disable the progress bar and slide numbers for the "Appendix" slides)
+			\ifnum \value{showProgressBar}>0\relax%
+				% the the progress bar icon in the middle of the screen
+				\draw[fill=KauLightGray,draw=none] (0cm,0cm) rectangle(\slidewidth,0.15cm);
+				\draw[fill=KauYellow,draw=none] (0cm,0cm) rectangle(\progressbar@tmpdim,0.15cm);
+
+				% bottom information
+				\node[anchor=south west] at(0cm,0.15cm) {\color{KauLightGray}\tiny\vphantom{lp}\insertsection};
+				% if slide numbers are active
+				\ifnum \value{showSlideNumbers}>0\relax%
+					% if slide totals are active
+					\ifnum \value{showSlideTotal}>0\relax%
+						% draw both slide number and slide total
+						\node[anchor=south east] at(\slidewidth,0.15cm) {\color{KauLightGray}\tiny\insertframenumber};
+					\else
+						% slide totals aren't active, don't draw them
+						\node[anchor=south east] at(\slidewidth,0.15cm) {\color{KauLightGray}\tiny\insertframenumber};
+					\fi
+				\fi
+			% don't show the progress bar?
+			\else
+				% section title in the bottom left
+				\node[anchor=south west] at(0cm,0cm) {\color{KauLightGray}\tiny\vphantom{lp}\insertsection};
+				% if we're showing slide numbers
+				\ifnum \value{showSlideNumbers}>0\relax%
+					% if slide totals are active
+					\ifnum \value{showSlideTotal}>0\relax%
+						% draw both slide number and slide total
+						\node[anchor=south east] at(\slidewidth,0cm) {\color{KauLightGray}\tiny\insertframenumber/\inserttotalframenumber};
+					\else
+						% slide totals aren't active, don't draw them
+						\node[anchor=south east] at(\slidewidth,0cm) {\color{KauLightGray}\tiny\insertframenumber};
+					\fi
+				\fi
+			\fi
+		\fi
+	\end{tikzpicture}
+}
+\makeatother
+
+% add section titles
+\AtBeginSection{\frame{\sectionpage}}
+\setbeamertemplate{section page}
+{
+	\begin{tikzpicture}
+		% set up the entire slide as the canvas
+		\useasboundingbox (0,0) rectangle(\slidewidth,\slideheight);
+		% hide our dash line over the frame title+subtitle
+		\fill[color=KauBlack] (-1cm, 2cm) rectangle (\slidewidth, \slideheight+0.1cm);
+		% background and text
+		\fill[color=KauYellow] (-1cm, 0.5\slideheight-1cm) rectangle(\slidewidth, 0.5\slideheight+1cm);
+		\node[text width=\the\paperwidth-1cm,align=center] at (0.4\slidewidth, 0.5\slideheight) {\color{KauBlack}\Huge\insertsection};
+		% hide section text
+		\fill[color=KauBlack] (-1cm, 2cm) rectangle (\slidewidth, 0.2cm);
+	\end{tikzpicture}
+}
+
+

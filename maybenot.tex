@@ -1,0 +1,220 @@
+%!TEX program = xelatex
+\pdfminorversion=4 % required for impressive presentation tool
+\documentclass[xcolor=x11names,dvipsnames,aspectratio=169]{beamer}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{flowchart}
+\usepackage[absolute,overlay]{textpos}
+\usepackage{tikz}
+
+\usetikzlibrary{
+  shapes.misc,positioning,arrows,decorations.markings,shapes.arrows
+}
+\tikzset{set/.style={draw,circle,inner sep=0pt,align=center}}
+\tikzset{brace/.style={decorate, decoration={brace}},
+  brace mirrored/.style={decorate, decoration={brace,mirror}}}
+	\pgfdeclarelayer{background}
+	\pgfsetlayers{background,main}
+
+  \usepackage[
+    lambda, advantage, operators, sets, adversary, landau, probability, notions,
+    logic, ff, mm, primitives, events, complexity, asymptotics, keys
+  ]{cryptocode}
+
+\usetheme{Dart}
+
+\definecolor{rust}{RGB}{222,165,132}
+\definecolor{tor}{RGB}{148,0,255}
+
+\title{Maybenot}
+\subtitle{A framework for traffic analysis defenses}
+\author{\href{https://pulls.name}{Tobias Pulls} and \href{https://www.ethanwitwer.com/}{Ethan Witwer}}
+\date{26 November 2023}
+
+\begin{document}
+	\frame{\titlepage}
+
+\setcounter{showSlideNumbers}{0}
+
+\begin{frame}{Patterns in encrypted data}
+  \framesubtitle{CC BY-SA 4.0 \url{https://words.filippo.io/the-ecb-penguin/}}
+  \begin{center}
+    \includegraphics<1>[width=.2\textwidth]{img/Tux}%
+  \end{center}
+\end{frame}
+
+\begin{frame}{Patterns in encrypted data}
+  \framesubtitle{CC BY-SA 4.0 \url{https://words.filippo.io/the-ecb-penguin/}}
+  \begin{center}
+    encrypted with AES-ECB\\
+    \includegraphics<1>[width=.35\textwidth]{img/tux-ecb}%
+  \end{center}
+\end{frame}
+
+\begin{frame}{Patterns in encrypted data}
+  \framesubtitle{CC BY-SA 4.0 \url{https://words.filippo.io/the-ecb-penguin/}}
+  \begin{center}
+    encrypted with AES-CBC\\
+    \includegraphics<1>[width=.35\textwidth]{img/tux-rng}%
+  \end{center}
+\end{frame}
+
+\begin{frame}{Patterns in encrypted network traffic}
+  \framesubtitle{from Tor, 514 byte cells}
+  \begin{center}
+    \includegraphics<1>[width=.9\textwidth]{img/trace-nopadding}%
+  \end{center}
+\end{frame}
+
+\begin{frame}{Patterns in encrypted network traffic}
+  \framesubtitle{from Tor, 514 byte cells}
+\begin{columns}
+  \begin{column}{0.4\textwidth}
+    \begin{itemize}
+      \item wikipedia.org, 10 articles
+      \vspace{0.8cm}
+      \item amazon.com, 10 products
+      \vspace{0.8cm}
+      \item reddit.com, 10 subreddits
+      \vspace{0.8cm}
+      \item okezone.com, 10 articles
+      \vspace{0.8cm}
+      \item yahoo.co.jp, 10 articles
+    \end{itemize}
+  \end{column}
+  \begin{column}{0.6\textwidth}
+    \begin{center}
+      \includegraphics<1>[width=.9\textwidth]{img/trace-nopadding-cut}%
+    \end{center}
+  \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Goal of Maybenot: increase attacker uncertainty \includegraphics<1>[width=.022\textwidth]{img/maybenot}}
+  \framesubtitle{black/white = received/sent nonpadding, red/green = received/sent padding}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \includegraphics<1>[width=.9\textwidth]{img/trace-nopadding-cut}%
+      \end{center}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \includegraphics<1>[width=.9\textwidth]{img/interspace}%
+      \end{center}
+    \end{column}
+    \end{columns}
+\end{frame}
+
+\section{Maybenot framework}
+\begin{frame}{Why a framework?}
+  \framesubtitle{early days of deploying good-enough defenses}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+      \begin{itemize}
+        \item perfect or \alert{good enough} defenses
+        \item moving target -- advances in AI
+        \item different types of traffic analysis attacks
+        \item different protocols, similar needs
+        \item \alert{orchestrate} defenses
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \begin{center}
+        \includegraphics<1>[width=.45\textwidth]{img/setting-tls}\\
+        \vspace{0.4cm}
+        \includegraphics<1>[width=.65\textwidth]{img/setting-vpn}\\
+        \vspace{0.4cm}
+        \includegraphics<1>[width=.85\textwidth]{img/setting-tor}
+      \end{center}
+    \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Maybenot framework}
+  \framesubtitle{a framework for traffic analysis defenses}
+  \begin{columns}
+    \begin{column}{0.3\textwidth}
+      \begin{center}
+        \includegraphics<1>[width=.9\textwidth]{img/framework}%
+      \end{center}
+    \end{column}
+    \begin{column}{0.7\textwidth}
+      \begin{itemize}
+        \item {a small light-weight library in \color{rust}Rust}
+        \item generalization and extension of the {\color{tor}Tor Circuit
+        Padding Framework} by Perry and Kadianakis
+        \bigskip
+        \item defenses as probabilistic state \alert{machines}
+        \item with tunable \alert{limits} on padding and blocking
+        \bigskip
+        \item integration is simple
+        \begin{description}
+          \item[input] trigger \alert{events}
+          \item[output] schedule \alert{actions}
+        \end{description}
+      \end{itemize}
+    \end{column}
+    \end{columns}
+\end{frame}
+
+
+\section{Maybenot simulator}
+\begin{frame}{Maybenot simulator}
+  \framesubtitle{because collecting real-world datasets takes time}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+      \begin{itemize}
+        \item another simple {\color{rust}Rust} library
+        \item input
+        \begin{itemize}
+          \item base network trace
+          \item machines at client and server
+          \item simulation parameters: e.g., limits and network model
+        \end{itemize}
+        \item output: simulated network trace
+        \item rapid \alert{prototyping} of defenses
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \includegraphics<1>[width=.99\textwidth]{img/sim-9-sites-criterion}%
+      \end{center}
+    \end{column}
+    \end{columns}
+\end{frame}
+
+\section{Maybenot defenses}
+\begin{frame}{Maybenot Pipelined FRONT}
+  \framesubtitle{Jiajun Gong and Tao Wang. \emph{Zero-delay Lightweight Defenses against Website Fingerprinting}. USENIX Security 2020.}
+  \begin{center}
+    \includegraphics<1>[width=.8\textwidth]{img/maybenot-piplined-front.png}%
+  \end{center}
+\end{frame}
+
+\begin{frame}{Maybenot RegulaTor}
+  \framesubtitle{James K Holland and Nicholas Hopper. \emph{RegulaTor: A Straightforward Website Fingerprinting Defense}. PETS 2022.}
+  \begin{center}
+    \includegraphics<1>[width=.6\textwidth]{img/maybenot-regulator.png}%
+  \end{center}
+\end{frame}
+
+\begin{frame}{Evaluation results}
+  \framesubtitle{Tobias Pulls and Ethan Witwer. \emph{Maybenot: A Framework for Traffic Analysis Defenses}. WPES 2023.}
+  \begin{center}
+    \includegraphics<1>[width=.85\textwidth]{img/wpes-table}%
+  \end{center}
+\end{frame}
+
+\section{Wrap-up}
+\begin{frame}{Takeaways}
+  \framesubtitle{``you don't know the power of the dark side''}
+  \begin{itemize}
+    \item \url{https://crates.io/crates/{maybenot, maybenot-simulator}}
+    \item \url{https://github.com/ewitwer/maybenot-defenses}
+  \end{itemize}
+\end{frame}
+
+  \backmatter
+
+\end{document}
