@@ -187,17 +187,80 @@
 \end{frame}
 
 \section{Maybenot defenses}
-\begin{frame}{Maybenot Pipelined FRONT}
+\begin{frame}{Defense 1: FRONT}
   \framesubtitle{Jiajun Gong and Tao Wang. \emph{Zero-delay Lightweight Defenses against Website Fingerprinting}. USENIX Security 2020.}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+      \begin{itemize}
+        \item a lightweight padding-based defense
+        \item on each side of a connection:
+        \begin{itemize}
+          \item sample a padding count $n = [1, N]$
+          \item sample a window $w = [W_{min}, W_{max}]$
+          \item select $n$ time values from a Rayleigh distribution with $\sigma = w$
+          \item send a packet at each time
+        \end{itemize}
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \large{\alert{trace}} \\
+        + \\
+        \tiny{\hfill} \\
+        \includegraphics<1>[width=.99\textwidth]{img/rayleigh.png}%
+      \end{center}
+    \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}{Maybenot FRONT}
+  \framesubtitle{a straightforward approach}
+  \begin{center}
+    \includegraphics<1>[width=.8\textwidth]{img/maybenot-front.png}%
+  \end{center}
+\end{frame}
+
+\begin{frame}{Pipelined FRONT}
+  \framesubtitle{towards a closer approximation}
   \begin{center}
     \includegraphics<1>[width=.8\textwidth]{img/maybenot-piplined-front.png}%
   \end{center}
 \end{frame}
+    
+\begin{frame}{Defense 2: RegulaTor}
+  \framesubtitle{James K Holland and Nicholas Hopper. \emph{RegulaTor: A Straightforward Website Fingerprinting Defense}. PETS 2022.}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+      \begin{itemize}
+        \item regularization defense for Tor
+        \item send traffic at a fixed rate $R$ initially, decrease via decay function: rate = $RD^t$
+        \item if the number of queued cells exceeds a threshold, restart the surge (reset $t_0$)
+        \item optimizations:
+        \begin{itemize}
+            \item padding budget
+            \item $C$ parameter for upload traffic
+        \end{itemize}
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \includegraphics<1>[width=.99\textwidth]{img/regulator-defended.png}%
+      \end{center}
+    \end{column}
+    \end{columns}
+\end{frame}
 
 \begin{frame}{Maybenot RegulaTor}
-  \framesubtitle{James K Holland and Nicholas Hopper. \emph{RegulaTor: A Straightforward Website Fingerprinting Defense}. PETS 2022.}
+  \framesubtitle{the relay-side machine}
   \begin{center}
     \includegraphics<1>[width=.6\textwidth]{img/maybenot-regulator.png}%
+  \end{center}
+\end{frame}
+
+\begin{frame}{Maybenot RegulaTor}
+  \framesubtitle{the client-side machine}
+  \begin{center}
+    \includegraphics<1>[width=.4\textwidth]{img/maybenot-regulator-client.png}%
   \end{center}
 \end{frame}
 
@@ -209,6 +272,24 @@
 \end{frame}
 
 \section{Wrap-up}
+\begin{frame}{Challenges}
+  \framesubtitle{simplicity vs. expressiveness}
+  \begin{itemize}
+    \item some defenses aren't designed for state machine models
+    \begin{itemize}
+        \item we can only approximate their behavior
+        \item large machines may be needed to do so
+    \end{itemize}
+    \item specific challenges in implementing defenses
+    \begin{itemize}
+        \item no event for queued cells
+        \item no clean mechanism for counting
+        \item no precise way to measure time
+    \end{itemize}
+    \item new features added in v2 of the framework
+  \end{itemize}
+\end{frame}
+
 \begin{frame}{Takeaways}
   \framesubtitle{``you don't know the power of the dark side''}
   \begin{itemize}
